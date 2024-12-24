@@ -19,6 +19,7 @@ const db = mysql.createConnection({
   user: "root",
   password: "", // Add your database password here
   database: "news", // Replace with your database name
+  // port: 3310,
 });
 
 // Connect to the database
@@ -74,6 +75,50 @@ app.get("/post/:id", (req, res) => {
       return res.status(500).send(err);
     }
     res.send(results[0]);
+  });
+});
+
+// Get all posts by userId
+app.get("/posts", (req, res) => {
+  const { userId } = req.query;
+  const sql = "SELECT * FROM newslist WHERE userId = ?";
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    res.send(results);
+  });
+});
+
+// Update post by id
+app.put("/post", (req, res) => {
+  const { id } = req.body;
+  const { name, content, image, userId } = req.body;
+  const sql =
+    "UPDATE newslist SET name = ?, content = ?, image = ?, userId = ? WHERE id = ?";
+  db.query(sql, [name, content, image, userId, id], (err, result) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).send({ message: "Post not found" });
+    }
+    res.send({ message: "Post updated successfully" });
+  });
+});
+
+// Delete post by id
+app.delete("/post/:id", (req, res) => {
+  const { id } = req.params;
+  const sql = "DELETE FROM newslist WHERE id = ?";
+  db.query(sql, [id], (err, result) => {
+    if (err) {
+      return res.status(500).send(err);
+    }
+    if (result.affectedRows === 0) {
+      return res.status(404).send({ message: "Post not found" });
+    }
+    res.send({ message: "Post deleted successfully" });
   });
 });
 
